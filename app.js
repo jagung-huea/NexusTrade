@@ -340,6 +340,7 @@ let currentCategoryFilter = 'all';
 document.addEventListener('DOMContentLoaded', () => {
   initArtcraftRuler();
   initFixedNavigationAndScrollSpy();
+  initMobileMenuDrawer();
   initHeroParallaxHover();
   initSearchAutocomplete();
   initCategoryFilters();
@@ -367,64 +368,165 @@ function initArtcraftRuler() {
   let ticksHTML = '';
   for (let i = 0; i <= totalTicks; i++) {
     const isMajor = (i % 5 === 0);
-    const topPercent = i;
     ticksHTML += `
-      <div class="ruler-tick ${isMajor ? 'major' : 'minor'}" data-percent="${i}" style="top: ${topPercent}%;">
+      <div class="ruler-tick ${isMajor ? 'major' : 'minor'}" data-percent="${i}">
         ${isMajor ? `<span class="ruler-tick-num">${i}</span>` : ''}
       </div>
     `;
   }
   ticksWrap.innerHTML = ticksHTML;
 
-  const tickElements = ticksWrap.querySelectorAll('.ruler-tick');
+  const tickElements = Array.from(ticksWrap.querySelectorAll('.ruler-tick'));
 
-  // 2. Update Ruler on Scroll
-  function updateRuler() {
-    const docHeight = document.documentElement.scrollHeight;
-    const winHeight = window.innerHeight;
-    const maxScroll = docHeight - winHeight;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  // 2. Physics & State Interpolation
+  let zoom = 0.0;           // 0.0 = idle wide centimeter marks, 1.0 = hovered fine millimeter marks
+  let targetZoom = 0.0;
+  let isDraggingRuler = false;
+  let mouseRelativeY = -9999;
+  let isNearRuler = false;
+  let lastTime = performance.now();
 
-    const progress = maxScroll > 0 ? Math.min(Math.max(scrollTop / maxScroll, 0), 1) : 0;
-    const percentInt = Math.round(progress * 100);
+  let trackRect = rulerTrack.getBoundingClientRect();
+  function refreshTrackRect() {
+    trackRect = rulerTrack.getBoundingClientRect();
+  }
+  window.addEventListener('resize', refreshTrackRect, { passive: true });
 
-    // Update Thumb Position & Percentage
-    thumbMarker.style.top = `${progress * 100}%`;
-    if (percentTag) {
-      percentTag.textContent = `${percentInt < 10 ? '0' : ''}${percentInt}%`;
+  // 3. 60FPS / 120FPS GPU Animation Loop
+  function tick(now) {
+    const dt = Math.min((now - lastTime) / 1000, 0.1);
+    lastTime = now;
+
+    // Smooth exponential lerp (matches ArtCraft's buttery responsiveness)
+    const lerpSpeed = isDraggingRuler ? 24 : 14;
+    const factor = 1 - Math.exp(-lerpSpeed * dt);
+    zoom += (targetZoom - zoom) * factor;
+
+    if (Math.abs(targetZoom - zoom) < 0.0005) {
+      zoom = targetZoom;
     }
 
-    // Update Viewport Bracket
-    if (viewportBracket && maxScroll > 0) {
-      const bracketHeight = Math.max((winHeight / docHeight) * 100, 4);
-      const bracketTop = progress * (100 - bracketHeight);
-      viewportBracket.style.top = `${bracketTop}%`;
-      viewportBracket.style.height = `${bracketHeight}%`;
+    const docHeight = document.documentElement.scrollHeight;
+    const winHeight = window.innerHeight;
+    const maxScroll = Math.max(docHeight - winHeight, 1);
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const progress = Math.min(Math.max(scrollTop / maxScroll, 0), 1);
+    const trackHeight = trackRect.height || (winHeight - 100);
+
+    // Update Thumb Marker Position & Percentage
+    const thumbY = progress * trackHeight;
+    thumbMarker.style.transform = `translate3d(0, ${thumbY.toFixed(2)}px, 0)`;
+
+    if (percentTag) {
+      const pctInt = Math.round(progress * 100);
+      percentTag.textContent = `${pctInt < 10 ? '0' : ''}${pctInt}%`;
+    }
+
+    // Update Viewport Coverage Bracket
+    if (viewportBracket) {
+      const bracketHeight = Math.max((winHeight / docHeight) * trackHeight, 14);
+      const bracketY = progress * (trackHeight - bracketHeight);
+      viewportBracket.style.transform = `translate3d(0, ${bracketY.toFixed(2)}px, 0)`;
+      viewportBracket.style.height = `${bracketHeight.toFixed(2)}px`;
+    }
+
+    // Dynamic Interpolation for all 101 ticks:
+    // In unzoomed mode (zoom = 0): ticks are spaced widely across document height (centimeter marks).
+    // In zoomed mode (zoom = 1): ticks compress evenly along the track (millimeter marks).
+    const isProximityActive = (zoom > 0.05 && isNearRuler);
+
+    for (let i = 0; i <= totalTicks; i++) {
+      const el = tickElements[i];
+      const isMajor = (i % 5 === 0);
+      const pct = i / 100;
+
+      // Coordinate in zoomed track space
+      const zoomedY = pct * trackHeight;
+
+      // Coordinate in unzoomed document space (scrolling with content)
+      const unzoomedY = (pct * maxScroll) - scrollTop;
+
+      // Current interpolated position
+      const currentY = (1 - zoom) * unzoomedY + zoom * zoomedY;
+
+      // Opacity calculation & edge feathering
+      let baseOpacity = 0;
+      if (currentY >= -15 && currentY <= trackHeight + 15) {
+        if (isMajor) {
+          let edgeFade = 1;
+          if (currentY < 30) edgeFade = Math.max(0, currentY / 30);
+          else if (currentY > trackHeight - 30) edgeFade = Math.max(0, (trackHeight - currentY) / 30);
+          baseOpacity = 0.85 * edgeFade;
+        } else {
+          // Minor millimeter ticks smoothly fade in as zoom increases
+          let edgeFade = 1;
+          if (currentY < 15) edgeFade = Math.max(0, currentY / 15);
+          else if (currentY > trackHeight - 15) edgeFade = Math.max(0, (trackHeight - currentY) / 15);
+          baseOpacity = 0.35 * zoom * edgeFade;
+        }
+      }
+
+      // Proximity Hover Wave (Dynamic fish-eye curve around cursor)
+      let scaleX = 1;
+      let finalOpacity = baseOpacity;
+
+      if (isProximityActive && baseOpacity > 0.01) {
+        const dist = Math.abs(currentY - mouseRelativeY);
+        const radius = 70; // Wave radius in pixels
+        if (dist < radius) {
+          const wave = Math.cos((dist / radius) * (Math.PI / 2));
+          scaleX = 1 + wave * 1.8;
+          finalOpacity = Math.min(1, baseOpacity + wave * 0.45);
+          el.classList.add('active-near');
+        } else {
+          el.classList.remove('active-near');
+        }
+      } else {
+        el.classList.remove('active-near');
+      }
+
+      el.style.transform = `translate3d(0, ${currentY.toFixed(2)}px, 0) scaleX(${scaleX.toFixed(3)})`;
+      el.style.opacity = finalOpacity.toFixed(3);
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  requestAnimationFrame(tick);
+
+  // 4. Mouse and Interaction Listeners
+  function handlePointerMove(clientX, clientY) {
+    const isDesktop = window.innerWidth > 768;
+    const distFromRight = window.innerWidth - clientX;
+    isNearRuler = distFromRight <= 100;
+    mouseRelativeY = clientY - trackRect.top;
+
+    if (isDraggingRuler) {
+      targetZoom = 1.0;
+      scrollToTrackY(clientY);
+    } else if (isDesktop && (isNearRuler || distFromRight <= 70)) {
+      targetZoom = 1.0;
+    } else {
+      targetZoom = 0.0;
     }
   }
 
-  // Optimized animation frame on scroll
-  let ticking = false;
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      window.requestAnimationFrame(() => {
-        updateRuler();
-        ticking = false;
-      });
-      ticking = true;
-    }
+  window.addEventListener('mousemove', (e) => {
+    handlePointerMove(e.clientX, e.clientY);
   }, { passive: true });
 
-  window.addEventListener('resize', updateRuler, { passive: true });
-  updateRuler();
-
-  // 3. Click and Drag Scrubber on Ruler Track
-  let isDraggingRuler = false;
+  document.addEventListener('mouseleave', () => {
+    if (!isDraggingRuler) {
+      targetZoom = 0.0;
+      isNearRuler = false;
+      mouseRelativeY = -9999;
+    }
+  });
 
   function scrollToTrackY(clientY) {
-    const rect = rulerTrack.getBoundingClientRect();
-    const offsetY = Math.min(Math.max(clientY - rect.top, 0), rect.height);
-    const ratio = offsetY / rect.height;
+    refreshTrackRect();
+    const offsetY = Math.min(Math.max(clientY - trackRect.top, 0), trackRect.height);
+    const ratio = trackRect.height > 0 ? offsetY / trackRect.height : 0;
     const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
     window.scrollTo({
       top: ratio * maxScroll,
@@ -434,52 +536,160 @@ function initArtcraftRuler() {
 
   rulerTrack.addEventListener('mousedown', (e) => {
     isDraggingRuler = true;
+    targetZoom = 1.0;
     scrollToTrackY(e.clientY);
   });
 
-  window.addEventListener('mousemove', (e) => {
+  window.addEventListener('mouseup', () => {
     if (isDraggingRuler) {
-      scrollToTrackY(e.clientY);
+      isDraggingRuler = false;
+      if (!isNearRuler) {
+        targetZoom = 0.0;
+      }
     }
+  });
 
-    // 4. Cursor Proximity Wave / Fish-Eye effect on Ruler Ticks
-    const rect = rulerTrack.getBoundingClientRect();
-    const isNearRuler = (window.innerWidth - e.clientX) <= 120;
-
-    if (isNearRuler && e.clientY >= rect.top && e.clientY <= rect.bottom) {
-      const mouseRelativeY = e.clientY - rect.top;
-      const trackHeight = rect.height;
-
-      tickElements.forEach(tick => {
-        const tickPercent = parseFloat(tick.dataset.percent);
-        const tickY = (tickPercent / 100) * trackHeight;
-        const dist = Math.abs(mouseRelativeY - tickY);
-
-        if (dist < 60) {
-          const factor = 1 - (dist / 60); // 0 to 1
-          const scale = 1 + factor * 1.6;
-          const opacity = 0.5 + factor * 0.5;
-          tick.style.transform = `scaleX(${scale})`;
-          tick.style.opacity = opacity;
-          tick.classList.add('active-near');
-        } else {
-          tick.style.transform = '';
-          tick.style.opacity = '';
-          tick.classList.remove('active-near');
-        }
-      });
-    } else {
-      tickElements.forEach(tick => {
-        tick.style.transform = '';
-        tick.style.opacity = '';
-        tick.classList.remove('active-near');
-      });
+  // Touch scrubbing on mobile without screen obstruction
+  rulerTrack.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches[0]) {
+      isDraggingRuler = true;
+      targetZoom = 1.0;
+      scrollToTrackY(e.touches[0].clientY);
     }
   }, { passive: true });
 
-  window.addEventListener('mouseup', () => {
+  window.addEventListener('touchmove', (e) => {
+    if (isDraggingRuler && e.touches && e.touches[0]) {
+      scrollToTrackY(e.touches[0].clientY);
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchend', () => {
     isDraggingRuler = false;
+    targetZoom = 0.0;
   });
+}
+
+// ============================================================
+// MOBILE NAVIGATION DRAWER & SEARCH
+// ============================================================
+function initMobileMenuDrawer() {
+  const toggleBtn = document.getElementById('mobileMenuToggle');
+  const drawer = document.getElementById('mobileMenuDrawer');
+  const navLinks = document.querySelectorAll('#mobileNavList .mobile-nav-link');
+  const searchInput = document.getElementById('mobileSearchInput');
+  const searchDropdown = document.getElementById('mobileSearchDropdown');
+  const checkTxBtn = document.getElementById('mobileCheckTxBtn');
+
+  if (!toggleBtn || !drawer) return;
+
+  function toggleDrawer(open) {
+    const isOpen = (typeof open === 'boolean') ? open : !drawer.classList.contains('active');
+    if (isOpen) {
+      drawer.classList.add('active');
+      toggleBtn.classList.add('active');
+      toggleBtn.setAttribute('aria-expanded', 'true');
+      drawer.setAttribute('aria-hidden', 'false');
+    } else {
+      drawer.classList.remove('active');
+      toggleBtn.classList.remove('active');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+      drawer.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  toggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleDrawer();
+  });
+
+  // Close drawer when clicking outside
+  document.addEventListener('click', (e) => {
+    if (drawer.classList.contains('active') && !drawer.contains(e.target) && !toggleBtn.contains(e.target)) {
+      toggleDrawer(false);
+    }
+  });
+
+  // Mobile navigation links click
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = link.getAttribute('data-target') || link.getAttribute('href').replace('#', '');
+      toggleDrawer(false);
+
+      if (targetId === 'top') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) {
+        const navHeight = 65;
+        const top = targetEl.getBoundingClientRect().top + window.pageYOffset - navHeight;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    });
+  });
+
+  // Mobile check transaction button
+  if (checkTxBtn) {
+    checkTxBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleDrawer(false);
+      if (typeof window.openCheckModal === 'function') {
+        window.openCheckModal();
+      }
+    });
+  }
+
+  // Mobile search input
+  if (searchInput && searchDropdown) {
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      if (!q) {
+        searchDropdown.classList.remove('active');
+        searchDropdown.innerHTML = '';
+        return;
+      }
+
+      const results = GAMES_DATA.filter(g =>
+        g.title.toLowerCase().includes(q) ||
+        g.category.toLowerCase().includes(q) ||
+        g.developer.toLowerCase().includes(q)
+      );
+
+      if (results.length === 0) {
+        searchDropdown.innerHTML = '<div style="padding:12px; font-size:12px; color:#888;">Game atau produk tidak ditemukan.</div>';
+        searchDropdown.classList.add('active');
+        return;
+      }
+
+      searchDropdown.innerHTML = results.map(g => `
+        <div class="search-item" data-id="${g.id}" style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-bottom:1px solid #222; cursor:pointer;">
+          <img src="${g.image}" alt="${g.title}" style="width:36px; height:36px; object-fit:cover; border:1px solid #333;">
+          <div style="flex:1;">
+            <div style="color:#fff; font-weight:700; font-size:12px;">${g.title}</div>
+            <div style="color:#e65c00; font-size:11px;">Mulai ${formatRupiah(g.packages[0].price)}</div>
+          </div>
+          <span style="color:#888; font-size:12px;">↗</span>
+        </div>
+      `).join('');
+      searchDropdown.classList.add('active');
+
+      searchDropdown.querySelectorAll('.search-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const gameId = item.dataset.id;
+          toggleDrawer(false);
+          searchInput.value = '';
+          searchDropdown.classList.remove('active');
+
+          if (typeof window.openCheckoutModal === 'function') {
+            window.openCheckoutModal(gameId);
+          }
+        });
+      });
+    });
+  }
 }
 
 // ============================================================
@@ -625,8 +835,8 @@ function initSearchAutocomplete() {
       return;
     }
 
-    const matched = Object.values(GAMES_DATA).filter(g => 
-      g.name.toLowerCase().includes(query) || 
+    const matched = Object.values(GAMES_DATA).filter(g =>
+      g.name.toLowerCase().includes(query) ||
       g.publisher.toLowerCase().includes(query) ||
       g.id.toLowerCase().includes(query)
     );
@@ -839,7 +1049,7 @@ function initCheckoutModal() {
 }
 
 // Open Top Up Modal for Selected Game
-window.openTopUpModal = function(gameId) {
+window.openTopUpModal = function (gameId) {
   const game = GAMES_DATA[gameId] || GAMES_DATA['mlbb'];
   currentSelectedGame = game;
   currentSelectedPackage = game.packages[0];
@@ -879,12 +1089,12 @@ window.openTopUpModal = function(gameId) {
   modalBackdrop.classList.add('active');
 };
 
-window.closeTopUpModal = function() {
+window.closeTopUpModal = function () {
   const modalBackdrop = document.getElementById('topupModal');
   if (modalBackdrop) modalBackdrop.classList.remove('active');
 };
 
-window.selectPackage = function(packageId) {
+window.selectPackage = function (packageId) {
   if (!currentSelectedGame) return;
   const pkg = currentSelectedGame.packages.find(p => p.id === packageId);
   if (!pkg) return;
@@ -999,7 +1209,7 @@ function showReceiptModal(data) {
   receiptModal.classList.add('active');
 }
 
-window.closeReceiptModal = function() {
+window.closeReceiptModal = function () {
   const modal = document.getElementById('receiptModal');
   if (modal) modal.classList.remove('active');
 };
@@ -1013,7 +1223,7 @@ function initEscrowModals() {
   if (closeBtn) closeBtn.addEventListener('click', closeEscrowModal);
 }
 
-window.openEscrowDetail = function(accountId) {
+window.openEscrowDetail = function (accountId) {
   const acc = ESCROW_ACCOUNTS.find(a => a.id === accountId) || ESCROW_ACCOUNTS[0];
   const modal = document.getElementById('escrowModal');
   const content = document.getElementById('escrowModalContent');
@@ -1062,12 +1272,12 @@ window.openEscrowDetail = function(accountId) {
   modal.classList.add('active');
 };
 
-window.closeEscrowModal = function() {
+window.closeEscrowModal = function () {
   const modal = document.getElementById('escrowModal');
   if (modal) modal.classList.remove('active');
 };
 
-window.requestEscrowBuy = function(accountId) {
+window.requestEscrowBuy = function (accountId) {
   const acc = ESCROW_ACCOUNTS.find(a => a.id === accountId);
   const text = encodeURIComponent(`Halo Admin NexusTrade, saya berminat membeli akun via Rekber Escrow: ${acc ? acc.title : 'Akun Game'} seharga ${acc ? formatRupiah(acc.price) : ''}`);
   window.open(`https://wa.me/6281234567890?text=${text}`, '_blank');
@@ -1086,7 +1296,7 @@ function initTransactionCheckModal() {
   }
 }
 
-window.openCheckModal = function() {
+window.openCheckModal = function () {
   const input = prompt('Masukkan Nomor Invoice NexusTrade Anda (Contoh: NXT-849102):');
   if (!input) return;
 

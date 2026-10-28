@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NexusTrade — Game. Escrow. Secure.</title>
-  <meta name="description" content="Platform top up game instan dan perantara jual beli akun game berbasis escrow (rekber) terpercaya di Indonesia. Mobile Legends, Free Fire, PUBG Mobile, Genshin Impact, Roblox, dan lainnya.">
+  <meta name="description"
+    content="Platform top up game instan dan perantara jual beli akun game berbasis escrow (rekber) terpercaya di Indonesia. Mobile Legends, Free Fire, PUBG Mobile, Genshin Impact, Roblox, dan lainnya.">
   <link rel="stylesheet" href="style.css">
   <link rel="icon" type="image/svg+xml" href="img/logo.svg">
 </head>
+
 <body>
   <div class="site-container">
 
@@ -33,7 +36,7 @@
       <div class="nav-search-wrap">
         <div class="search-editorial-box">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input type="text" id="globalSearchInput" placeholder="CARI GAME / VOUCHER..." autocomplete="off">
         </div>
@@ -42,17 +45,72 @@
 
       <!-- Action Buttons -->
       <div class="nav-actions">
-        <button id="backToTopNavBtn" class="btn-nav-outline btn-to-top" title="Kembali ke bagian paling atas" aria-label="Kembali ke atas">
+        <button id="backToTopNavBtn" class="btn-nav-outline btn-to-top" title="Kembali ke bagian paling atas"
+          aria-label="Kembali ke atas">
           ↑ KE ATAS
         </button>
-        <button id="checkTransactionNavBtn" class="btn-nav-outline">CEK TRANSAKSI ↗</button>
+        <button id="checkTransactionNavBtn" class="btn-nav-outline btn-check-tx">CEK TRANSAKSI ↗</button>
+        <!-- Mobile Menu Toggle Button (Visible only on mobile <= 768px) -->
+        <button id="mobileMenuToggle" class="btn-mobile-menu" aria-label="Buka Menu Navigasi" aria-expanded="false">
+          <span class="hamburger-bar"></span>
+          <span class="hamburger-bar"></span>
+          <span class="hamburger-bar"></span>
+        </button>
       </div>
     </nav>
+
+    <!-- Mobile Navigation Drawer (Brutalist Architectural Dropdown) -->
+    <div id="mobileMenuDrawer" class="mobile-menu-drawer" aria-hidden="true">
+      <div class="mobile-drawer-inner">
+        <!-- Mobile Search Input -->
+        <div class="mobile-search-box">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input type="text" id="mobileSearchInput" placeholder="CARI GAME / VOUCHER..." autocomplete="off">
+        </div>
+        <div id="mobileSearchDropdown" class="mobile-search-dropdown"></div>
+
+        <!-- Mobile Navigation Links -->
+        <div class="mobile-nav-list" id="mobileNavList">
+          <a href="#top" class="mobile-nav-link active" data-target="top">
+            <span class="mobile-nav-idx">00</span>
+            <span class="mobile-nav-name">BERANDA</span>
+            <span class="mobile-nav-arr">↗</span>
+          </a>
+          <a href="#populer" class="mobile-nav-link" data-target="populer">
+            <span class="mobile-nav-idx">01</span>
+            <span class="mobile-nav-name">GAME POPULER</span>
+            <span class="mobile-nav-arr">↗</span>
+          </a>
+          <a href="#katalog" class="mobile-nav-link" data-target="katalog">
+            <span class="mobile-nav-idx">02</span>
+            <span class="mobile-nav-name">SEMUA PRODUK TOP UP</span>
+            <span class="mobile-nav-arr">↗</span>
+          </a>
+          <a href="#escrow" class="mobile-nav-link" data-target="escrow">
+            <span class="mobile-nav-idx">03</span>
+            <span class="mobile-nav-name">ESCROW AKUN REKBER</span>
+            <span class="mobile-nav-arr">↗</span>
+          </a>
+          <a href="#faq" class="mobile-nav-link" data-target="faq">
+            <span class="mobile-nav-idx">04</span>
+            <span class="mobile-nav-name">FAQ &amp; BANTUAN</span>
+            <span class="mobile-nav-arr">↗</span>
+          </a>
+        </div>
+
+        <div class="mobile-drawer-actions">
+          <button id="mobileCheckTxBtn" class="btn-mobile-check-tx">CEK STATUS TRANSAKSI ↗</button>
+        </div>
+      </div>
+    </div>
 
     <!-- ==========================================
          ARTCRAFT KINETIC RULER SCROLLBAR
          ========================================== -->
-    <div id="artcraftRulerContainer" class="artcraft-ruler-container" aria-label="ArtCraft Scrollbar & Ruler Navigation">
+    <div id="artcraftRulerContainer" class="artcraft-ruler-container"
+      aria-label="ArtCraft Scrollbar & Ruler Navigation">
       <!-- Translucent Backdrop Blur -->
       <div class="ruler-backdrop"></div>
 
@@ -82,7 +140,8 @@
       <div class="header-hero-centered" id="heroContentCore">
         <small class="hero-kicker">01 / NEXUSTRADE • PLATFORM TRANSAKSI ASET GAME RESMI</small>
         <h1 class="hero-centered-title">GAME.<br>ESCROW.<br>SECURE.</h1>
-        <p class="hero-centered-desc">Kuasai permainan dengan pengisian diamond instan direct-API dalam 30 detik, serta layanan rekening bersama (escrow) terproteksi dengan inspeksi akun manual anti-hackback.</p>
+        <p class="hero-centered-desc">Kuasai permainan dengan pengisian diamond instan direct-API dalam 30 detik, serta
+          layanan rekening bersama (escrow) terproteksi dengan inspeksi akun manual anti-hackback.</p>
         <div class="header-cta-row">
           <a href="#populer" class="btn-hero-primary">TOP UP SEKARANG ↗</a>
           <a href="#escrow" class="btn-hero-secondary">KATALOG REKBER ↗</a>
@@ -605,9 +664,11 @@
             <div>
               <small style="color:#888;">05 / ESCROW MARKETPLACE</small>
               <h2>KATALOG AKUN VERIFIED</h2>
-              <p>Perdagangan akun game tangan pertama dengan jaminan anti-hackback, verifikasi identitas KTP (KYC), inspeksi fisik akun menyeluruh, serta penahanan dana rekening bersama resmi.</p>
+              <p>Perdagangan akun game tangan pertama dengan jaminan anti-hackback, verifikasi identitas KTP (KYC),
+                inspeksi fisik akun menyeluruh, serta penahanan dana rekening bersama resmi.</p>
             </div>
-            <button class="btn-escrow-request" onclick="alert('Pendaftaran Titip Jual Akun: Hubungi Admin NexusTrade via WhatsApp untuk kurasi dan verifikasi dokumen akun Anda!')">
+            <button class="btn-escrow-request"
+              onclick="alert('Pendaftaran Titip Jual Akun: Hubungi Admin NexusTrade via WhatsApp untuk kurasi dan verifikasi dokumen akun Anda!')">
               + DAFTARKAN AKUN ↗
             </button>
           </div>
@@ -707,13 +768,14 @@
           <article class="article-editorial">
             <small>06 / CORE STANDARDS</small>
             <h2>KEUNGGULAN<br>NEXUSTRADE.</h2>
-            <p style="color:#555; margin-bottom:24px;">Dirancang khusus bagi gamers yang memprioritaskan keamanan dana, kecepatan transaksi, dan transparansi proses tanpa birokrasi berbelit.</p>
+            <p style="color:#555; margin-bottom:24px;">Dirancang khusus bagi gamers yang memprioritaskan keamanan dana,
+              kecepatan transaksi, dan transparansi proses tanpa birokrasi berbelit.</p>
 
             <div class="features-interactive-list">
               <div class="feature-editorial-btn active" data-feature="instant">
                 <div>
                   <h4>01. ISI ULANG INSTAN (< 30 DETIK)</h4>
-                  <p>Direct API injection langsung ke server game resmi.</p>
+                      <p>Direct API injection langsung ke server game resmi.</p>
                 </div>
                 <span>↗</span>
               </div>
@@ -762,12 +824,14 @@
             <!-- Dynamic Detail Box -->
             <div class="feature-detail-card-box">
               <h3 id="featureDisplayTitle">ISI ULANG INSTAN (< 30 DETIK)</h3>
-              <p id="featureDisplayDesc">Semua sistem voucher dan diamond di NexusTrade terhubung secara langsung (direct-API) dengan server resmi pengembang game. Setelah pembayaran terkonfirmasi, item game langsung masuk otomatis ke akun dalam hitungan detik tanpa perlu menunggu antrean manual.</p>
-              <ul id="featureDisplayBullets">
-                <li><span>[✓]</span> Proses 100% otomatis 24 jam nonstop</li>
-                <li><span>[✓]</span> Notifikasi sukses langsung via WhatsApp & Email</li>
-                <li><span>[✓]</span> Garansi saldo kembali jika terjadi gangguan server</li>
-              </ul>
+                  <p id="featureDisplayDesc">Semua sistem voucher dan diamond di NexusTrade terhubung secara langsung
+                    (direct-API) dengan server resmi pengembang game. Setelah pembayaran terkonfirmasi, item game
+                    langsung masuk otomatis ke akun dalam hitungan detik tanpa perlu menunggu antrean manual.</p>
+                  <ul id="featureDisplayBullets">
+                    <li><span>[✓]</span> Proses 100% otomatis 24 jam nonstop</li>
+                    <li><span>[✓]</span> Notifikasi sukses langsung via WhatsApp & Email</li>
+                    <li><span>[✓]</span> Garansi saldo kembali jika terjadi gangguan server</li>
+                  </ul>
             </div>
           </article>
 
@@ -775,7 +839,8 @@
           <aside id="faq" class="aside-editorial">
             <small>07 / KNOWLEDGE BASE</small>
             <h2>PANDUAN &<br>PERTANYAAN.</h2>
-            <p style="color:#444; margin-bottom:20px;">Segala hal penting seputar transaksi aman dan perlindungan konsumen di NexusTrade.</p>
+            <p style="color:#444; margin-bottom:20px;">Segala hal penting seputar transaksi aman dan perlindungan
+              konsumen di NexusTrade.</p>
 
             <div class="faq-list-minimal">
               <!-- FAQ 1 -->
@@ -785,7 +850,8 @@
                   <span class="faq-icon-cross">+</span>
                 </button>
                 <div class="faq-ans-body">
-                  Pengiriman item game bersifat instan dan otomatis melalui integrasi API resmi. Rata-rata transaksi sukses diproses dalam waktu 5 hingga 30 detik setelah pembayaran terverifikasi oleh sistem.
+                  Pengiriman item game bersifat instan dan otomatis melalui integrasi API resmi. Rata-rata transaksi
+                  sukses diproses dalam waktu 5 hingga 30 detik setelah pembayaran terverifikasi oleh sistem.
                 </div>
               </div>
 
@@ -796,7 +862,9 @@
                   <span class="faq-icon-cross">+</span>
                 </button>
                 <div class="faq-ans-body">
-                  Pembeli mentransfer dana ke rekening resmi NexusTrade. Admin teknisi login ke akun untuk verifikasi item dan mengamankan pemindahan email/password ke pembeli. Setelah pembeli konfirmasi akun aman, dana dicairkan ke penjual.
+                  Pembeli mentransfer dana ke rekening resmi NexusTrade. Admin teknisi login ke akun untuk verifikasi
+                  item dan mengamankan pemindahan email/password ke pembeli. Setelah pembeli konfirmasi akun aman, dana
+                  dicairkan ke penjual.
                 </div>
               </div>
 
@@ -807,7 +875,9 @@
                   <span class="faq-icon-cross">+</span>
                 </button>
                 <div class="faq-ans-body">
-                  Kami mendukung pembayaran QRIS instan bebas admin (semua e-wallet), DANA, GoPay, OVO, ShopeePay, Virtual Account Bank (BCA, Mandiri, BRI, BNI), serta pembayaran tunai melalui gerai minimarket Alfamart.
+                  Kami mendukung pembayaran QRIS instan bebas admin (semua e-wallet), DANA, GoPay, OVO, ShopeePay,
+                  Virtual Account Bank (BCA, Mandiri, BRI, BNI), serta pembayaran tunai melalui gerai minimarket
+                  Alfamart.
                 </div>
               </div>
 
@@ -818,7 +888,9 @@
                   <span class="faq-icon-cross">+</span>
                 </button>
                 <div class="faq-ans-body">
-                  Penjual diwajibkan menyertakan verifikasi identitas (KYC) dan menandatangani persetujuan digital. Jika terjadi upaya penarikan paksa oleh penjual asli, NexusTrade memberikan garansi kompensasi 100% kepada pembeli.
+                  Penjual diwajibkan menyertakan verifikasi identitas (KYC) dan menandatangani persetujuan digital. Jika
+                  terjadi upaya penarikan paksa oleh penjual asli, NexusTrade memberikan garansi kompensasi 100% kepada
+                  pembeli.
                 </div>
               </div>
 
@@ -829,15 +901,19 @@
                   <span class="faq-icon-cross">+</span>
                 </button>
                 <div class="faq-ans-body">
-                  Klik tombol "CEK TRANSAKSI ↗" di navigasi atas dan masukkan nomor invoice Anda (contoh: NXT-849102) untuk melihat status pengiriman secara real-time.
+                  Klik tombol "CEK TRANSAKSI ↗" di navigasi atas dan masukkan nomor invoice Anda (contoh: NXT-849102)
+                  untuk melihat status pengiriman secara real-time.
                 </div>
               </div>
             </div>
 
             <hr style="margin:25px 0; border:0; border-top:1px solid #b3b3ad;">
             <small style="color:#555;">BUTUH BANTUAN KHUSUS?</small>
-            <p style="font-size:13px; color:#444; margin-top:4px;">Customer Care resmi siap melayani Anda setiap hari pukul 09.00 – 22.00 WIB.</p>
-            <a href="https://wa.me/6281234567890" target="_blank" style="font-family:var(--font-heading); font-weight:bold; font-size:13px; display:inline-block; margin-top:8px;">HUBUNGI WHATSAPP ↗</a>
+            <p style="font-size:13px; color:#444; margin-top:4px;">Customer Care resmi siap melayani Anda setiap hari
+              pukul 09.00 – 22.00 WIB.</p>
+            <a href="https://wa.me/6281234567890" target="_blank"
+              style="font-family:var(--font-heading); font-weight:bold; font-size:13px; display:inline-block; margin-top:8px;">HUBUNGI
+              WHATSAPP ↗</a>
           </aside>
         </section>
 
@@ -847,23 +923,40 @@
           <h2 style="font-size:36px; margin:4px 0 16px 0;">DUKUNGAN PELANGGAN</h2>
           <div class="support-channels-flex">
             <div class="support-channel-tile" onclick="alert('Hubungi tim Live Chat Messenger NexusTrade!')">
-              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.145 2 11.258c0 2.91 1.455 5.512 3.736 7.18V22l3.415-1.874c.915.254 1.883.39 2.849.39 5.523 0 10-4.145 10-9.258C22 6.145 17.523 2 12 2zm1.002 12.443l-2.56-2.73-5.002 2.73 5.498-5.836 2.624 2.73 4.938-2.73-5.498 5.836z"/></svg>
+              <svg fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M12 2C6.477 2 2 6.145 2 11.258c0 2.91 1.455 5.512 3.736 7.18V22l3.415-1.874c.915.254 1.883.39 2.849.39 5.523 0 10-4.145 10-9.258C22 6.145 17.523 2 12 2zm1.002 12.443l-2.56-2.73-5.002 2.73 5.498-5.836 2.624 2.73 4.938-2.73-5.498 5.836z" />
+              </svg>
               <span>MESSENGER ↗</span>
             </div>
-            <div class="support-channel-tile" onclick="window.open('https://wa.me/6281234567890?text=Halo%20Admin%20NexusTrade', '_blank')">
-              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 2C6.5 2 2.016 6.484 2.016 12.015c0 1.766.46 3.485 1.336 5.008L2 22l5.125-1.344a9.97 9.97 0 004.906 1.359h.004c5.527 0 10.016-4.484 10.016-10.016 0-2.672-1.04-5.187-2.93-7.078C17.23 2.04 14.707 2 12.031 2zm0 1.844c2.184 0 4.238.852 5.781 2.395a8.136 8.136 0 012.399 5.777c0 4.512-3.668 8.18-8.18 8.18a8.12 8.12 0 01-4.156-1.129l-.297-.176-3.086.81.824-3.008-.195-.313a8.136 8.136 0 01-1.25-4.364c0-4.511 3.672-8.172 8.16-8.172z"/></svg>
+            <div class="support-channel-tile"
+              onclick="window.open('https://wa.me/6281234567890?text=Halo%20Admin%20NexusTrade', '_blank')">
+              <svg fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M12.031 2C6.5 2 2.016 6.484 2.016 12.015c0 1.766.46 3.485 1.336 5.008L2 22l5.125-1.344a9.97 9.97 0 004.906 1.359h.004c5.527 0 10.016-4.484 10.016-10.016 0-2.672-1.04-5.187-2.93-7.078C17.23 2.04 14.707 2 12.031 2zm0 1.844c2.184 0 4.238.852 5.781 2.395a8.136 8.136 0 012.399 5.777c0 4.512-3.668 8.18-8.18 8.18a8.12 8.12 0 01-4.156-1.129l-.297-.176-3.086.81.824-3.008-.195-.313a8.136 8.136 0 01-1.25-4.364c0-4.511 3.672-8.172 8.16-8.172z" />
+              </svg>
               <span>WHATSAPP ↗</span>
             </div>
             <div class="support-channel-tile" onclick="window.location.href='mailto:support@nexustrade-id.com'">
-              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+              <svg fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+              </svg>
               <span>EMAIL CS ↗</span>
             </div>
             <div class="support-channel-tile" onclick="window.location.href='#faq'">
-              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm1.07-7.75l-.9.92C12.45 11.9 12 12.5 12 14h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 .88-.36 1.68-.93 2.25z"/></svg>
+              <svg fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm1.07-7.75l-.9.92C12.45 11.9 12 12.5 12 14h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 .88-.36 1.68-.93 2.25z" />
+              </svg>
               <span>PUSAT FAQ ↗</span>
             </div>
-            <div class="support-channel-tile" onclick="alert('Terima kasih atas saran Anda bagi pengembangan NexusTrade!')">
-              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z"/></svg>
+            <div class="support-channel-tile"
+              onclick="alert('Terima kasih atas saran Anda bagi pengembangan NexusTrade!')">
+              <svg fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z" />
+              </svg>
               <span>FEEDBACK ↗</span>
             </div>
           </div>
@@ -874,7 +967,8 @@
               <h3>BERLANGGANAN BULLETIN</h3>
               <p>Dapatkan rekap diskon mingguan dan info akun tier atas yang baru masuk katalog.</p>
             </div>
-            <form class="newsletter-input-group" onsubmit="event.preventDefault(); alert('Terima kasih telah berlangganan warta NexusTrade!');">
+            <form class="newsletter-input-group"
+              onsubmit="event.preventDefault(); alert('Terima kasih telah berlangganan warta NexusTrade!');">
               <input type="email" placeholder="MASUKKAN ALAMAT EMAIL ANDA..." required>
               <button type="submit">DAFTAR ↗</button>
             </form>
@@ -890,7 +984,8 @@
     <footer class="editorial-footer">
       <div>
         <strong>NEXUSTRADE / DIGITAL ASSET</strong>
-        <p>NexusTrade Indonesia · Platform penyedia layanan top-up game online instan dan perantara jual beli akun digital berbasis escrow terstandarisasi.</p>
+        <p>NexusTrade Indonesia · Platform penyedia layanan top-up game online instan dan perantara jual beli akun
+          digital berbasis escrow terstandarisasi.</p>
         <div class="footer-compliance-text">
           Penyelenggara Perdagangan Melalui Sistem Elektronik (PPMSE) Terdaftar<br>
           Mematuhi Regulasi Direktorat Jenderal Perlindungan Konsumen & Tertib Niaga, Kementerian Perdagangan RI.
@@ -907,8 +1002,10 @@
       </div>
 
       <div>
-        <a href="#top" style="font-family:var(--font-heading); font-size:16px; font-weight:800; color:#fff;">Kembali ke atas ↑</a>
-        <p style="margin-top:15px;">© 2026 NexusTrade Indonesia. Seluruh hak cipta dilindungi undang-undang.<br>Aset dan merek dagang game merupakan properti milik masing-masing pengembang resmi.</p>
+        <a href="#top" style="font-family:var(--font-heading); font-size:16px; font-weight:800; color:#fff;">Kembali ke
+          atas ↑</a>
+        <p style="margin-top:15px;">© 2026 NexusTrade Indonesia. Seluruh hak cipta dilindungi undang-undang.<br>Aset dan
+          merek dagang game merupakan properti milik masing-masing pengembang resmi.</p>
       </div>
     </footer>
 
@@ -1007,7 +1104,8 @@
               <h4>NO. WHATSAPP / EMAIL STRUK TRANSAKSI</h4>
             </div>
             <div class="form-group">
-              <input type="text" id="userPhoneInput" class="form-control" placeholder="08xxxxxxxxxx (Untuk pengiriman bukti faktur resmi)">
+              <input type="text" id="userPhoneInput" class="form-control"
+                placeholder="08xxxxxxxxxx (Untuk pengiriman bukti faktur resmi)">
             </div>
             <div class="step-hint">Faktur digital resmi dan bukti serial pin dikirimkan langsung ke nomor ini.</div>
           </div>
@@ -1045,4 +1143,5 @@
 
   <script src="app.js"></script>
 </body>
+
 </html>
